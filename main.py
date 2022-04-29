@@ -1,7 +1,7 @@
-from pydoc import plain
 import pygame
 import sys
 from settings import SETTINGS, COLOR
+from maps import TEST_ROOM
 
 class Player:
     def __init__(self, px: float, py: float, size, speed: float) -> None:
@@ -21,10 +21,26 @@ class Player:
 def update(dt):
     player.update(dt)
 
+def draw_2d_map():
+    tz=SETTINGS["TILE_SIZE"]
+    for y in range (0,len(TEST_ROOM)):
+        for x in range (0,len(TEST_ROOM[0])):
+            xo=x*tz
+            yo=y*tz
+            if TEST_ROOM[y][x]==1:
+                _color=COLOR["WHITE"]
+            else:
+                _color=COLOR["BLACK"]
+            pygame.draw.rect(surface=surface, color=_color,
+                                rect=pygame.Rect(xo,yo,tz-1,tz-1))
+                                   
+                
 
 def draw():
+    # draw background
     surface.fill(COLOR["DARK_GRAY"])
-
+    # draw map
+    draw_2d_map()
     # Draw Player as a square    
     pygame.draw.rect(surface=surface, color=COLOR["YELLOW"],
                      rect=pygame.Rect(player.px-player.size/2,
@@ -71,11 +87,12 @@ def main():
     pygame.display.set_icon(pygame.image.load(SETTINGS["ICON_URL"]))
 
     while True:
-        pygame.display.update()
         dt=clock.tick(SETTINGS["FPS"]) / 1000
         handle_events()
         draw()
         update(dt)
+        pygame.display.update()
+
 
 
 if __name__ == "__main__":

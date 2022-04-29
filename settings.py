@@ -1,7 +1,11 @@
 SETTINGS={
     "WINDOW_SIZE":(1280,720),
+    "FPS":60,
     "TITLE":"Tomb of The Unknown God",
-    "ICON_URL":"logo.png"
+    "ICON_URL":"logo.png",
+    "PLAYER_SPOS":(300,600),
+    "PLAYER_SIZE":8,
+    "PLAYER_SPEED":200
 }
 
 COLOR={

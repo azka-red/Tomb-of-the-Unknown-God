@@ -1,34 +1,65 @@
 import pygame
-from pygame.locals import *
 import sys
 import math
 from settings import SETTINGS, COLOR
-from utils import dist
 from maps import TEST_ROOM
-from player import Player
+
+
+class Player:
+    def __init__(self, px: float, py: float, size, speed: float, pa: float, ts: float) -> None:
+        # player coordinates
+        self.px = px
+        self.py = py
+        self.pa = math.radians(pa)
+        self.da = 0
+        self.size = size
+        self.speed = speed
+        self.ts = ts
+        self.movement = 0  # 0 is in place, 1 is moving forward, -1 is moving backwards
+
+    def update(self, dt):
+        self.px += self.movement*(self.speed*dt)*math.cos(self.pa)
+        self.py += self.movement*(self.speed*dt)*math.sin(self.pa)
+
+        self.pa += self.da*(self.ts*dt)
+        if self.pa > 2*math.pi:
+            self.pa -= 2*math.pi
+
+        elif self.pa < 0:
+            self.pa += 2*math.pi
+
+
+# update stuff according to delta time value
+def update(dt):
+    player.update(dt)
+
+# returns distance between 2 points
+def dist(ax: float, ay: float, bx: float, by: float):
+    return (math.sqrt((bx-ax)**2+(by-ay)**2))
 
 
 def draw_3d_rays():
     px = player.px
     py = player.py
     tile_size = SETTINGS["TILE_SIZE"]
-    wx_size, wy_size = SETTINGS["RENDER_SIZE"]
-    fov = SETTINGS["FOV"]
+    wx_size,wy_size=SETTINGS["WINDOW_SIZE"]
+    fov=SETTINGS["FOV"]
     # aux variable to calculate nearest ry value
     bit_mod = int(math.log(tile_size, 2))
     m_size_x = len(TEST_ROOM[0])
     m_size_y = len(TEST_ROOM)
 
+
     dr = math.radians(fov/wx_size)
-    ra = player.pa-dr*(wx_size-tile_size*m_size_x)/2
-    if (ra < 0):
-        ra += 2*math.pi
+    ra=player.pa-dr*(wx_size-tile_size*m_size_x)/2
+    if (ra<0):
+        ra+=2*math.pi
+    
+    if (ra>2*math.pi):
+        ra-=2*math.pi
 
-    if (ra > 2*math.pi):
-        ra -= 2*math.pi
-
-    # raycasting loop for 320 vertical lines
-    for r in range(400):
+    # raycasting loop
+    for r in range(wx_size-tile_size*m_size_x):
 
         # check horizontal lines
         dof = 0
@@ -107,57 +138,43 @@ def draw_3d_rays():
         if (dist_h < dist_v):
             rx = hx
             ry = hy
-            dist_t = dist_h
+            dist_t=dist_h
         if (dist_v < dist_h):
             rx = vx
             ry = vy
-            dist_t = dist_v
+            dist_t=dist_v
         pygame.draw.line(surface=surface, color=COLOR["RED"],
                          start_pos=(player.px, player.py),
                          end_pos=(rx, ry))
-
+        
         # draw 3d walls
-        ca = player.pa-ra
-        if ca < 0:
-            ca += 2*math.pi
-        if ca > 2*math.pi:
-            ca -= 2*math.pi
-        dist_t = dist_t*math.cos(ca)
+        ca=player.pa-ra
+        if ca<0:
+            ca+=2*math.pi
+        if ca>2*math.pi:
+            ca-=2*math.pi
+        dist_t=dist_t*math.cos(ca)
 
-        line_h = (tile_size*270)/dist_t
-        if line_h > 270:
-            line_h = 270
-        line_off = 135-line_h/2
+        line_h=(tile_size*960)/dist_t
+        if line_h>960:
+            line_h=960
+        line_off=360-line_h/2
 
-        # wall color based on distance to simulate some basic shading
-        c_color = (255/dist_t*8)+5
-        if c_color > 255:
-            c_color = 255
-        if c_color < 0:
-            c_color = 0
+        c_color=255/dist_t*45-50  # wall color based on distance to simulate some basic shading
+        if c_color >255: c_color=255
+        if c_color <0: c_color=0
+        
+        pygame.draw.line(surface=surface,color=(c_color,0,0),
+                        start_pos=(r*1+328,line_off),end_pos=(r*1+328,line_h+line_off),width=1)
 
-        pygame.draw.line(surface=surface, color=(c_color, 0, 0),
-                         start_pos=(r+80, line_off), end_pos=(r+80, line_h+line_off), width=1)
+        ra+=dr
+        if (ra<0):
+            ra+=2*math.pi
+    
+        if (ra>2*math.pi):
+            ra-=2*math.pi
 
-        ra += dr
-        if (ra < 0):
-            ra += 2*math.pi
-
-        if (ra > 2*math.pi):
-            ra -= 2*math.pi
-
-
-def draw_player():
-    # Draw Player as a square
-    pygame.draw.rect(surface=surface, color=COLOR["YELLOW"],
-                     rect=pygame.Rect(player.px-player.size/2,
-                                      player.py-player.size/2,
-                                      player.size, player.size))
-    pygame.draw.line(surface=surface, color=COLOR["YELLOW"],
-                     start_pos=(player.px, player.py),
-                     end_pos=(player.px+math.cos(player.pa)*player.size*2,
-                              player.py+math.sin(player.pa)*player.size*2), width=int(player.size/4))
-
+      
 
 def draw_2d_map():
     tz = SETTINGS["TILE_SIZE"]
@@ -171,6 +188,18 @@ def draw_2d_map():
                 _color = COLOR["BLACK"]
             pygame.draw.rect(surface=surface, color=_color,
                              rect=pygame.Rect(xo, yo, tz-1, tz-1))
+
+
+def draw_player():
+    # Draw Player as a square
+    pygame.draw.rect(surface=surface, color=COLOR["YELLOW"],
+                     rect=pygame.Rect(player.px-player.size/2,
+                                      player.py-player.size/2,
+                                      player.size, player.size))
+    pygame.draw.line(surface=surface, color=COLOR["YELLOW"],
+                     start_pos=(player.px, player.py),
+                     end_pos=(player.px+math.cos(player.pa)*player.size*2,
+                              player.py+math.sin(player.pa)*player.size*2), width=int(player.size/4))
 
 
 def draw():
@@ -207,48 +236,30 @@ def handle_events():
             if event.key == pygame.K_a or event.key == pygame.K_d:
                 player.da = 0
 
-        elif event.type == VIDEORESIZE:
-            global window
-            window = pygame.display.set_mode(
-                event.size, HWSURFACE | DOUBLEBUF | RESIZABLE)
 
-# update stuff according to delta time value
-
-
-def update(dt):
-    player.update(dt)
-
-
-#################################################################
 clock = pygame.time.Clock()
-
+surface = pygame.display.set_mode(SETTINGS["WINDOW_SIZE"])
+surface.fill(COLOR["DARK_GRAY"])
 px, py = SETTINGS["PLAYER_SPOS"]
 player = Player(px, py, SETTINGS["PLAYER_SIZE"],
                 SETTINGS["PLAYER_SPEED"],
                 SETTINGS["PLAYER_SANGLE"],
                 SETTINGS["PLAYER_TSPEED"])
 
-##################################################################
-pygame.init()
-pygame.display.set_caption(SETTINGS["TITLE"])
-pygame.display.set_icon(pygame.image.load(SETTINGS["ICON_URL"]))
 
-# window that contains fake screen and surface
-window = pygame.display.set_mode(
-    SETTINGS["WINDOW_SIZE"], HWSURFACE | DOUBLEBUF | RESIZABLE)
+def main():
 
-#copy of container window for scaling purposes
-#fake_screen = window.copy()
-# actual drawing surface
-surface=pygame.surface.Surface(SETTINGS["RENDER_SIZE"])
+    pygame.init()
+    pygame.display.set_caption(SETTINGS["TITLE"])
+    pygame.display.set_icon(pygame.image.load(SETTINGS["ICON_URL"]))
 
-while True:
-    dt = clock.tick(SETTINGS["FPS"]) / 1000
-    handle_events()
-    draw()
-    update(dt)
-    #fake_screen.blit(surface,(0,0))
-    window.blit(pygame.transform.scale(
-        surface, window.get_rect().size), (0, 0))
+    while True:
+        dt = clock.tick(SETTINGS["FPS"]) / 1000
+        handle_events()
+        draw()
+        update(dt)
+        pygame.display.flip()
 
-    pygame.display.flip()
+
+if __name__ == "__main__":
+    main()

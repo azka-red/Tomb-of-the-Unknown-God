@@ -130,7 +130,7 @@ def draw_3d_rays():
         line_off = 135-line_h/2
 
         # wall color based on distance to simulate some basic shading
-        c_color = (255/dist_t*8)+5
+        c_color = (255/dist_t*8)
         if c_color > 255:
             c_color = 255
         if c_color < 0:
@@ -172,10 +172,53 @@ def draw_2d_map():
             pygame.draw.rect(surface=surface, color=_color,
                              rect=pygame.Rect(xo, yo, tz-1, tz-1))
 
+def draw_ceiling():
+    ceiling_color=(100,100,100)
+    h=SETTINGS["TILE_SIZE"]/2
+    start_angle=math.radians(SETTINGS["FOV"])/4
+    da=start_angle/135
+    for i in range(0,135):
+        dist_c=h/math.sin(start_angle-da*i)
+        cr=(ceiling_color[0]/dist_c*8)
+        cg=(ceiling_color[1]/dist_c*8)
+        cb=(ceiling_color[2]/dist_c*8)
+        if cr < 0: cr=0
+        if cg < 0: cg=0
+        if cb < 0: cb=0
+        if cr > 255: cr=255
+        if cg > 255: cg=255
+        if cb > 255: cb=255
+        pygame.draw.line(surface=surface,color=(int(cr),int(cg),int(cb)),start_pos=(80,i),end_pos=(480,i),width=1)
+
+
+def draw_floor():
+    floor_color=(100,100,100)
+    h=SETTINGS["TILE_SIZE"]/2
+    start_angle=math.radians(SETTINGS["FOV"])/4
+    da=start_angle/135
+
+    for i in range(0,135):
+        dist_c=h/math.sin(start_angle-da*i)
+        cr=(floor_color[0]/dist_c*8)
+        cg=(floor_color[1]/dist_c*8)
+        cb=(floor_color[2]/dist_c*8)
+        if cr < 0: cr=0
+        if cg < 0: cg=0
+        if cb < 0: cb=0
+        if cr > 255: cr=255
+        if cg > 255: cg=255
+        if cb > 255: cb=255
+        pygame.draw.line(surface=surface,color=(int(cr),int(cg),int(cb)),start_pos=(80,270-i),end_pos=(480,270-i),width=1)
+
+
+
+
 
 def draw():
     # draw background
     surface.fill(COLOR["DARK_GRAY"])
+    draw_floor()
+    draw_ceiling()
     draw_2d_map()
     draw_3d_rays()
     draw_player()

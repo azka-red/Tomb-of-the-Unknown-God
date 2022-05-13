@@ -4,13 +4,13 @@ SETTINGS={
     "FPS":60,
     "TITLE":"Tomb of The Unknown God",
     "ICON_URL":"logo.png",
-    "PLAYER_SPOS":(40,40),
+    "PLAYER_SPOS":(30,20),
     "PLAYER_SIZE":2,
     "PLAYER_SPEED":10,
-    "PLAYER_SANGLE":45,
+    "PLAYER_SANGLE":0,
     "PLAYER_TSPEED":0.5,
     "TILE_SIZE":8,
-    "FOV":90,
+    "FOV":60,
 
 }
 

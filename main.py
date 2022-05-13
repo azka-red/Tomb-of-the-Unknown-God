@@ -27,7 +27,7 @@ def draw_3d_rays():
     if (ra > 2*math.pi):
         ra -= 2*math.pi
 
-    # raycasting loop for 320 vertical lines
+    # raycasting loop for 400 vertical lines
     for r in range(400):
 
         # check horizontal lines
@@ -124,7 +124,7 @@ def draw_3d_rays():
             ca -= 2*math.pi
         dist_t = dist_t*math.cos(ca)
 
-        line_h = (tile_size*270)/dist_t
+        line_h = (tile_size*400)/dist_t
         if line_h > 270:
             line_h = 270
         line_off = 135-line_h/2
